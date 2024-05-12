@@ -1,0 +1,13 @@
+charging,battery start,int
+charging,battery end,int
+charging,charge start,datetime
+charging,charge end,datetime
+charging,timezone,Varchar(10)
+charging,rn1,int
+charging,rn2,int
+data_staging,state,Varchar(5)
+data_staging,battery,int
+data_staging,date,datetime
+data_staging,timezone,Varchar(10)
+data_staging,rn,int
+data_staging,rn,pk
