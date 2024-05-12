@@ -1,0 +1,161 @@
+use battery ;
+
+-- 1. How many times was the phone charged daily ?
+
+with cte as (
+	select date(`charge start`) as date, 
+		count(*) cnt 
+	from charging 
+	group by 1
+)
+select round(avg(cnt),0) as `charges per day`
+from cte ;
+
+-- 2. How many times has the phone reached below 20% ?
+
+select sum(case when `battery start` < 20 then 1 else 0 end) `battery < 20`, 
+	count(*) total
+from charging ;
+
+-- 3. How many times has the phone reached below 10% ?
+
+select sum(case when `battery start` < 10 then 1 else 0 end) `battery < 10`, 
+	count(*) total
+from charging ;
+
+-- 3. How many times has the phone reached below 5% ?
+
+select sum(case when `battery start` < 5 then 1 else 0 end) `battery < 5`, 
+	count(*) total
+from charging ;
+
+-- 4. How many times has the phone reached above 80% ?
+
+select sum(case when `battery end` > 80 then 1 else 0 end) `battery > 80`, 
+	count(*) total
+from charging ;
+
+-- 5. How many times has the phone reached above 90% ?
+
+select sum(case when `battery end` > 90 then 1 else 0 end) `battery > 90`, 
+	count(*) total
+from charging ;
+
+-- 6. How many times has the phone reached 100% ?
+
+select sum(case when `battery end` = 100 then 1 else 0 end) `battery = 100`, 
+	count(*) total
+from charging ;
+
+-- 7. Longest and shortest duration of charge ?
+
+with cte as (
+	select TIME_FORMAT(SEC_TO_TIME(timestampdiff(second, `charge start`, `charge end`)), '%Hh:%im:%ss') as `charge duration` 
+	from charging
+)
+select max(`charge duration`), 
+	min(`charge duration`)
+from cte 
+-- where `charge duration` <> 0
+;
+
+-- 8. Most number of charges in a day ?
+
+with cte as (
+	select date(`charge start`) as date, 
+		count(*) cnt
+	from charging 
+	group by 1
+),
+cte2 as (
+	select *,
+		row_number() over(order by cnt desc) as rn
+	from cte
+)
+select date,
+	cnt
+from cte2
+where rn = 1 ;
+
+-- 9. How long does it take to charge from 20% to 50% ?
+
+select TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge start`, `charge end`))), '%Hh:%im:%ss') as `avg charge duration`
+from charging
+where `battery start` between 17 and 23 
+	and `battery end` between 47 and 53 ;
+
+
+-- 10. How long does it take for the charge to go down from 50% to 20% ?
+
+with cte as (
+	select a.`battery end`,
+		b.`battery start`,
+		a.`charge end`,
+		b.`charge start`
+	from charging a 
+		join charging b 
+			on a.rn1 +3 = b.rn2
+)
+select avg(`battery end` - `battery start`) as `battery down`,
+	TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge end`, `charge start`))), '%Hh:%im:%ss') as `down time`
+from cte 
+where `battery end` between 47 and 53
+	and `battery start` between 17 and 23 ;
+
+-- 11. How long does it take to charge from 10% to 50% ?
+
+select TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge start`, `charge end`))), '%Hh:%im:%ss') as `avg charge duration`
+from charging
+where `battery start` between 7 and 13 
+	and `battery end` between 47 and 53 ;
+
+-- 12 How long does it take for the charge to go down from 50% to 10% ?
+
+with cte as (
+	select a.`battery end`,
+		b.`battery start`,
+		a.`charge end`,
+		b.`charge start`
+	from charging a 
+		join charging b 
+			on a.rn1 +3 = b.rn2
+)
+select avg(`battery end` - `battery start`) as `battery down`,
+	TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge end`, `charge start`))), '%Hh:%im:%ss') as `down time`
+from cte 
+where `battery end` between 47 and 53
+	and `battery start` between 7 and 13 ;
+
+-- 13. How long does it take to charge from 50% to 80% ?
+
+select TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge start`, `charge end`))), '%Hh:%im:%ss') as `avg charge duration`
+from charging
+where `battery start` between 47 and 53 
+	and `battery end` between 77 and 83 ;
+
+-- 14. How long does it take for the charge to go down from 80% to 50% ?
+
+with cte as (
+	select a.`battery end`,
+		b.`battery start`,
+		a.`charge end`,
+		b.`charge start`
+	from charging a 
+		join charging b 
+			on a.rn1 +3 = b.rn2
+)
+select avg(`battery end` - `battery start`) as `battery down`,
+	TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge end`, `charge start`))), '%Hh:%im:%ss') as `down time`
+from cte 
+where `battery end` between 77 and 83
+	and `battery start` between 47 and 53 ;
+
+
+
+
+
+
+
+
+
+
