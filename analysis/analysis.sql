@@ -1,6 +1,3 @@
--- SQL Query Language
-
-
 -- Month wise discharge behaviour
 with cte as (
 	select a.`battery end`,
@@ -11,26 +8,12 @@ with cte as (
 		join charging b 
 			on a.rn1 +3 = b.rn2
 )
-select YEAR(`charge end`) as YEAR,
-	MONTHNAME(`charge end`) AS MONTH,
+select DATE_FORMAT(`charge end`, '%Y-%m') as month,
 	avg(`battery end` - `battery start`) as `battery down`,
-	TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge end`, `charge start`))), '%Hh:%im:%ss') as `down time`
+	avg(timestampdiff(second, `charge end`, `charge start`)) as `down time`
 from cte 
-GROUP BY 1, 2 
-ORDER BY YEAR DESC,
-	CASE WHEN MONTH='January' then 1
-		WHEN MONTH='February' then 2
-		WHEN MONTH='March' then 3
-		WHEN MONTH='April' then 4
-		WHEN MONTH='May' then 5
-		WHEN MONTH='June' then 6
-		WHEN MONTH='July' then 7
-		WHEN MONTH='August' then 8
-		WHEN MONTH='September' then 9
-		WHEN MONTH='October' then 10
-		WHEN MONTH='November' then 11
-		WHEN MONTH='December' then 12
-	ELSE 13 END ;
+GROUP BY 1
+ORDER BY month ;
 	
 
 -- Week wise discharge behaviour
@@ -43,25 +26,34 @@ with cte as (
 		join charging b 
 			on a.rn1 +3 = b.rn2
 )
-select YEAR(`charge end`) as YEAR,
-	MONTHNAME(`charge end`) AS MONTH,
-	WEEK(`charge end`) as WEEK,
+select CONCAT(DATE_FORMAT(`charge end`, '%Y-%m'), ' ', WEEK(`charge end`)) as week,
 	avg(`battery end` - `battery start`) as `battery down`,
-	TIME_FORMAT(SEC_TO_TIME(avg(timestampdiff(second, `charge end`, `charge start`))), '%Hh:%im:%ss') as `down time`
+	avg(timestampdiff(second, `charge end`, `charge start`)) as `down time`
 from cte 
-GROUP BY 1, 2, 3 
-ORDER BY YEAR DESC,
-	CASE WHEN MONTH='January' then 1
-		WHEN MONTH='February' then 2
-		WHEN MONTH='March' then 3
-		WHEN MONTH='April' then 4
-		WHEN MONTH='May' then 5
-		WHEN MONTH='June' then 6
-		WHEN MONTH='July' then 7
-		WHEN MONTH='August' then 8
-		WHEN MONTH='September' then 9
-		WHEN MONTH='October' then 10
-		WHEN MONTH='November' then 11
-		WHEN MONTH='December' then 12
-	ELSE 13 END,
-		WEEK desc ;
+GROUP BY 1
+ORDER BY WEEK ;
+
+
+-- Month wise charge behaviour
+with cte as (
+	select DATE_FORMAT(`charge end`, '%Y-%m') as month,
+		avg(`battery end` - `battery start`) as `battery charged`,
+		avg(timestampdiff(second, `charge start`, `charge end`)) as `time taken`
+	from charging
+	group by 1
+)
+select *
+from cte 
+ORDER BY month ;
+
+-- Week wise charge behaviour
+with cte as (
+	select CONCAT(DATE_FORMAT(`charge end`, '%Y-%m'), ' ', WEEK(`charge end`)) as week, 
+		avg(`battery end` - `battery start`) as `battery charged`,
+		avg(timestampdiff(second, `charge start`, `charge end`)) as `time taken`
+	from charging
+	group by 1
+)
+select *
+from cte 
+ORDER BY week ;
