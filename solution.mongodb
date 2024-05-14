@@ -1,3 +1,47 @@
 // 1. How many times was the phone charged daily ?
 
+/*
+ * db.charging.aggregate({$project:{date:{$dateFromString: {dateString:"$charge start", format: "%Y-%m-%d %H:%M:%S" }}}})
+ *
+ * db.charging.aggregate({$project:{date:{$substr:["$charge start",0,10]}}})
+ *
+ * db.charging.aggregate({$group:{_id:"$charge start", charge_count:{$count:{}}}})
+ *
+ * db.charging.aggregate({$group:{_id:{$substr:["$charge start",0,10]}, charge_count:{$count:{}}}})
+ *
+ */
+
+db.charging.aggregate(
+    {
+        $group:{
+            _id:{
+                $substr:["$charge start",0,10]
+            },
+            charge_count:{
+                $count:{}
+            }
+
+        }
+
+    },
+    // pipe to next query
+    {
+        $group:{
+            _id:null,
+            avgCount:{
+                $avg:"$charge_count"
+            }
+        }
+
+    },
+    // display results
+    {
+        $project: {
+            "average charge per day":{
+                $round:["$avgCount", 0]
+            },
+            _id:0
+        }
+    }
+).toArray() // jsonArray
 
