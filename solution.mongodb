@@ -1,16 +1,5 @@
 // 1. How many times was the phone charged daily ?
 
-/*
- * db.charging.aggregate({$project:{date:{$dateFromString: {dateString:"$charge start", format: "%Y-%m-%d %H:%M:%S" }}}})
- *
- * db.charging.aggregate({$project:{date:{$substr:["$charge start",0,10]}}})
- *
- * db.charging.aggregate({$group:{_id:"$charge start", charge_count:{$count:{}}}})
- *
- * db.charging.aggregate({$group:{_id:{$substr:["$charge start",0,10]}, charge_count:{$count:{}}}})
- *
- */
-
 db.charging.aggregate(
     {
         $group:{
@@ -45,3 +34,20 @@ db.charging.aggregate(
     }
 ).toArray() // jsonArray
 
+// 2. How many times has the phone reached below 20% ?
+
+// db.col.aggregate(
+//     {"$facet":{
+//         "count1":[{"$match":query1},{"$count":"count"}],
+//         "count2":[{"$match":query2},{"$count":"count"}],
+//         "count3":[{"$match":query3},{"$count":"count"}]
+//     }})
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "less than 20%":[
+            {$match:{"battery start":{$lt:20}}},
+            {$count:"count"}
+        ]}
+})
