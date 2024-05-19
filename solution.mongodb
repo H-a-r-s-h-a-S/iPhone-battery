@@ -36,13 +36,6 @@ db.charging.aggregate(
 
 // 2. How many times has the phone reached below 20% ?
 
-// db.col.aggregate(
-//     {"$facet":{
-//         "count1":[{"$match":query1},{"$count":"count"}],
-//         "count2":[{"$match":query2},{"$count":"count"}],
-//         "count3":[{"$match":query3},{"$count":"count"}]
-//     }})
-
 db.charging.aggregate({
     $facet:{
         "total":[{$count:"count"}],
@@ -51,3 +44,59 @@ db.charging.aggregate({
             {$count:"count"}
         ]}
 })
+
+// 3. How many times has the phone reached below 10% ?
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "less than 10%":[
+            {$match:{"battery start":{$lt:10}}},
+            {$count:"count"}
+        ]}
+})
+
+// 4. How many times has the phone reached below 5% ?
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "less than 5%":[
+            {$match:{"battery start":{$lt:5}}},
+            {$count:"count"}
+        ]}
+})
+
+// 5. How many times has the phone reached above 80% ?
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "above 80%":[
+            {$match:{"battery end":{$gt:80}}},
+            {$count:"count"}
+        ]}
+})
+
+// 6. How many times has the phone reached above 90% ?
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "above 90%":[
+            {$match:{"battery end":{$gt:90}}},
+            {$count:"count"}
+        ]}
+})
+
+// 7. How many times has the phone reached 100% ?
+
+db.charging.aggregate({
+    $facet:{
+        "total":[{$count:"count"}],
+        "100%":[
+            {$match:{"battery end":100}},
+            {$count:"count"}
+        ]}
+})
+
