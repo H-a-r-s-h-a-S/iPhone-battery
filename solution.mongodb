@@ -100,3 +100,40 @@ db.charging.aggregate({
         ]}
 })
 
+// 8. Most number of charges in a day ?
+
+db.charging.aggregate(
+    {
+        $group: {
+            _id: {
+                $substr: ["$charge start",0,10]
+            },
+            charge_count : {
+                $count: {}
+            }
+        }
+    },
+    {
+        $setWindowFields: {
+            partitionBy: null,
+            sortBy: {charge_count: -1},
+            output: {
+                row_number: {
+                    $documentNumber: {}
+                }
+            }
+        }
+    },
+    {
+        "$match": {
+            "row_number": 1
+        }
+    },
+    {
+        "$project": {
+            "date": "$_id",
+            charge_count: 1,
+            _id: 0
+        }
+    }
+)
