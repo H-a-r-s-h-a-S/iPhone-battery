@@ -137,3 +137,53 @@ db.charging.aggregate(
         }
     }
 )
+
+// 9. How long does it take to charge from 20% to 50% ?
+
+db.charging.aggregate([
+    {
+        $match: {
+            "battery start": { $gte: 17, $lte: 23 },
+            "battery end": { $gte: 47, $lte: 53 }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            "average charge duration": {
+                $avg: {
+                    $dateDiff: {
+                        startDate: {
+                            $dateFromString: {
+                                dateString: "$charge start"
+                            }
+                        },
+                        endDate: {
+                            $dateFromString: {
+                                dateString: "$charge end"
+                            }
+                        },
+                        unit: "millisecond"
+                    }
+                }
+            }
+        }
+    },
+    {
+        $set: {
+            "average charge duration": {
+                $dateToString: {
+                    date: {
+                        $toDate: "$average charge duration"
+                    },
+                    format: "%Hh:%Mm:%Ss"
+                }
+            }
+        }
+    },
+    {
+        $project: {
+            _id:0
+        }
+    }
+])
