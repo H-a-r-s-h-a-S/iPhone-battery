@@ -18,5 +18,6 @@ mysql -u root -p battery < clean.sql
 sudo mv /var/lib/mysql-files/final.csv final.csv
 sudo chmod ugo+rw final.csv
 
-mongoimport -d battery -c charging --file charging.json --drop -v
+# mongoimport -d battery -c charging --file charging.json --drop -v
+mongoimport -d battery -c charging --file final.json --drop -v
 
